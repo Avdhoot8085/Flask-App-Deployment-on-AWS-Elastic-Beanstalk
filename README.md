@@ -1,84 +1,73 @@
-# 🚀 Flask App Deployment on AWS Elastic Beanstalk (No CLI)
+# 🚀 Flask App Deployment on AWS Elastic Beanstalk
 
-> **By Avdhoot Lad**  
-> Deploy a Flask application to AWS Elastic Beanstalk using the AWS Console — no CLI required.
+<div align="center">
 
----
+![Flask App Deployment on AWS Elastic Beanstalk](architecture.png)
 
-## 📋 Table of Contents
+**Deploy a production-ready Flask application to AWS Elastic Beanstalk — no CLI required.**
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
-- [Setup & Configuration](#setup--configuration)
-- [Deployment Steps](#deployment-steps)
-- [How It Works](#how-it-works)
-- [Monitoring & Logs](#monitoring--logs)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+*by Avdhoot Lad*
+
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.3+-000000?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![Gunicorn](https://img.shields.io/badge/Gunicorn-21.2+-499848?style=flat-square&logo=gunicorn&logoColor=white)](https://gunicorn.org)
+[![AWS](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-FF9900?style=flat-square&logo=amazonaws&logoColor=white)](https://aws.amazon.com/elasticbeanstalk)
+
+</div>
 
 ---
 
-## Overview
+## 🌐 Overview
 
-This project demonstrates how to deploy a **Flask** web application on **AWS Elastic Beanstalk** entirely through the AWS Management Console — no EB CLI or AWS CLI needed.
+This project demonstrates deploying a **Flask** web application on **AWS Elastic Beanstalk** using only the **AWS Management Console** — no EB CLI or AWS CLI required.
 
-The app runs behind **Gunicorn** (a production-grade WSGI server) on an **EC2** instance managed automatically by Elastic Beanstalk.
+The app runs behind **Gunicorn** (production WSGI server) on an EC2 instance that is **automatically managed** by Elastic Beanstalk, giving you built-in auto scaling, health monitoring, and log access out of the box.
 
 ---
 
-## Architecture
+## 🏗 Architecture
 
 ```
-User (HTTPS) ──► AWS EC2 ──► Flask + Gunicorn Server
-                    ▲
-                    │  Managed Automatically
-                    │
-         ┌──────────────────────┐
-         │  AWS Elastic Beanstalk│
-         │  ┌────┬──────┬──────┐│
-         │  │Auto│Monit-│ Logs ││
-         │  │Scal│oring │      ││
-         │  └────┴──────┴──────┘│
-         └──────────────────────┘
+User (HTTPS)
+     │
+     │  Request
+     ▼
+┌─────────────┐          ┌──────────────────────────┐
+│   AWS EC2   │ ──────▶  │   Flask + Gunicorn        │
+│  Instance   │          │   Flask App Server         │
+└──────┬──────┘          └──────────────────────────┘
+       │ ▲
+       │ │  Managed Automatically
+       ▼ │
+┌──────────────────────────────────────────────┐
+│             AWS Elastic Beanstalk            │
+│  ┌────────────┬──────────────┬────────────┐  │
+│  │ Auto       │  Monitoring  │   Logs     │  │
+│  │ Scaling    │  (CloudWatch)│            │  │
+│  └────────────┴──────────────┴────────────┘  │
+└──────────────────────────────────────────────┘
 ```
 
 | Component | Role |
-|---|---|
-| **Flask** | Python web framework handling routes and logic |
-| **Gunicorn** | Production WSGI server serving the Flask app |
-| **AWS EC2** | Virtual server running the app |
-| **AWS Elastic Beanstalk** | Manages EC2, auto scaling, monitoring, and logs automatically |
+|-----------|------|
+| **Flask** | Python micro web framework — handles routes & business logic |
+| **Gunicorn** | Production WSGI server — serves Flask over HTTP |
+| **AWS EC2** | Virtual server running your application |
+| **Elastic Beanstalk** | Orchestrates EC2, auto scaling, health checks, logs |
 
 ---
 
-## Prerequisites
+## ✅ Prerequisites
 
-- An **AWS account** with access to Elastic Beanstalk
+- An **AWS account** with Elastic Beanstalk access
 - **Python 3.8+** installed locally
 - Basic knowledge of Flask
 
 ---
 
-## Project Structure
+## ⚙️ Setup & Configuration
 
-```
-my-flask-app/
-├── application.py        # Main Flask app (entry point must be named 'application')
-├── requirements.txt      # Python dependencies
-├── Procfile              # Tells Elastic Beanstalk to use Gunicorn
-└── .ebextensions/        # (Optional) EB configuration files
-    └── python.config
-```
-
-> ⚠️ **Important:** AWS Elastic Beanstalk expects the Flask app object to be named `application` inside `application.py`.
-
----
-
-## Setup & Configuration
-
-### 1. Flask Application (`application.py`)
+### 1. `application.py`
 
 ```python
 from flask import Flask
@@ -93,20 +82,20 @@ if __name__ == '__main__':
     application.run(debug=True)
 ```
 
-### 2. Dependencies (`requirements.txt`)
+### 2. `requirements.txt`
 
 ```
 Flask==2.3.3
 gunicorn==21.2.0
 ```
 
-### 3. Procfile
+### 3. `Procfile`
 
 ```
 web: gunicorn --bind 0.0.0.0:8000 application:application
 ```
 
-### 4. (Optional) EB Extensions (`.ebextensions/python.config`)
+### 4. `.ebextensions/python.config` *(Optional)*
 
 ```yaml
 option_settings:
@@ -116,46 +105,44 @@ option_settings:
 
 ---
 
-## Deployment Steps
+## 🚀 Deployment Steps
 
 ### Step 1 — Zip your project
 
-Select all your project files (not the folder itself) and compress them into a `.zip` file.
+Select all files (**not** the folder) and compress into a `.zip`:
 
 ```
 application.py
 requirements.txt
 Procfile
-.ebextensions/   ← include if present
+.ebextensions/
 ```
 
 ### Step 2 — Open AWS Elastic Beanstalk Console
 
-1. Log in to the [AWS Console](https://console.aws.amazon.com)
-2. Search for **Elastic Beanstalk** and open it
-3. Click **"Create Application"**
+1. Log in to [console.aws.amazon.com](https://console.aws.amazon.com)
+2. Search **Elastic Beanstalk** and click **"Create Application"**
 
-### Step 3 — Configure the Application
+### Step 3 — Configure
 
 | Field | Value |
-|---|---|
-| Application name | `my-flask-app` (or any name) |
+|-------|-------|
+| Application name | `my-flask-app` |
 | Platform | **Python** |
-| Platform branch | Python 3.x on 64-bit Amazon Linux 2 |
+| Platform branch | Python 3.x on Amazon Linux 2 |
 | Application code | Upload your `.zip` file |
 
-### Step 4 — Create & Deploy
+### Step 4 — Deploy
 
-Click **"Create application"** and wait ~5 minutes. AWS will:
-
+Click **"Create application"** and wait ~5 minutes. AWS will automatically:
 - Provision an EC2 instance
-- Install Python and your dependencies
-- Start Gunicorn to serve your Flask app
-- Set up a health check endpoint
+- Install Python and dependencies from `requirements.txt`
+- Start Gunicorn using your `Procfile`
+- Configure health checks
 
 ### Step 5 — Access Your App
 
-Once the environment status turns **Green (Healthy)**, click the provided URL:
+Once the environment shows **Green (Healthy)**:
 
 ```
 http://my-flask-app.eba-xxxxxxxx.us-east-1.elasticbeanstalk.com
@@ -163,48 +150,44 @@ http://my-flask-app.eba-xxxxxxxx.us-east-1.elasticbeanstalk.com
 
 ---
 
-## How It Works
+## 🔄 How It Works
 
-1. **User** sends an HTTPS request to the app URL
-2. **AWS EC2** instance receives the request
-3. **Gunicorn** (WSGI server) passes it to your **Flask** application
+```
+1. User sends HTTPS request to the Elastic Beanstalk URL
+2. Request is routed to the EC2 instance
+3. Gunicorn (WSGI server) receives the request
 4. Flask processes the request and returns a response
-5. **Elastic Beanstalk** manages the EC2 instance automatically — handling health checks, restarts, scaling, and updates
+5. Elastic Beanstalk continuously monitors health,
+   scales EC2 instances, and manages the environment
+```
 
 ---
 
-## Monitoring & Logs
+## 📊 Monitoring & Logs
 
-AWS Elastic Beanstalk provides built-in tools accessible from the console:
+Elastic Beanstalk provides built-in observability from the console:
 
-| Feature | Description |
-|---|---|
-| **Auto Scaling** | Automatically adds/removes EC2 instances based on traffic |
-| **Monitoring** | CPU, network, and request metrics with CloudWatch |
-| **Logs** | Download or view logs directly from the EB console |
-
-To view logs:
-> Elastic Beanstalk Console → Your Environment → **Logs** → Request Logs → Last 100 Lines
+| Feature | Description | Access |
+|---------|-------------|--------|
+| **Auto Scaling** | Adds/removes EC2 instances based on traffic | Configuration > Capacity |
+| **Monitoring** | CPU, requests, latency metrics via CloudWatch | Monitoring tab |
+| **Logs** | Application and server logs | Logs > Request last 100 lines |
 
 ---
 
-## Troubleshooting
+## 🛠 Troubleshooting
 
-| Issue | Solution |
-|---|---|
-| Environment stuck in "Pending" | Check EC2 instance limits in your AWS region |
-| 502 Bad Gateway | Verify `Procfile` exists and Gunicorn command is correct |
-| App not loading | Ensure Flask app object is named `application` |
-| Dependencies missing | Check `requirements.txt` is in the root of your zip |
-| Health check failing | Add a `/` route that returns a `200` status |
-
----
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
+| Problem | Solution |
+|---------|----------|
+| Environment stuck in **Pending** | Check EC2 instance limits in your region |
+| **502 Bad Gateway** | Verify `Procfile` exists and Gunicorn command is correct |
+| **App not loading** | Ensure Flask object is named `application` in `application.py` |
+| **Dependencies missing** | Confirm `requirements.txt` is in the root of your `.zip` |
+| **Health check failing** | Add a `/` route that returns HTTP `200` |
+| **Environment not updating** | Re-upload a new `.zip` via Console > Upload and Deploy |
 
 ---
 
-*Crafted with ❤️ by Avdhoot Lad*
-# Flask-App-Deployment-on-AWS-Elastic-Beanstalk
+<div align="center">
+  Crafted with love by Avdhoot Lad
+</div>
