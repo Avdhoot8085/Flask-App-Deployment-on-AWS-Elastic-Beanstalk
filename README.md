@@ -17,6 +17,20 @@
 
 ---
 
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [Project Structure](#-project-structure)
+- [Setup & Configuration](#-setup--configuration)
+- [Deployment Steps](#-deployment-steps)
+- [How It Works](#-how-it-works)
+- [Monitoring & Logs](#-monitoring--logs)
+- [Troubleshooting](#-troubleshooting)
+
+---
+
 ## 🌐 Overview
 
 This project demonstrates deploying a **Flask** web application on **AWS Elastic Beanstalk** using only the **AWS Management Console** — no EB CLI or AWS CLI required.
@@ -62,6 +76,21 @@ User (HTTPS)
 - An **AWS account** with Elastic Beanstalk access
 - **Python 3.8+** installed locally
 - Basic knowledge of Flask
+
+---
+
+## 📁 Project Structure
+
+```
+my-flask-app/
+├── application.py          # Main Flask app (must use 'application' as object name)
+├── requirements.txt        # Python dependencies
+├── Procfile                # Tells EB to use Gunicorn
+└── .ebextensions/          # (Optional) EB environment config
+    └── python.config
+```
+
+> ⚠️ **Critical:** AWS Elastic Beanstalk expects the Flask app object to be named **`application`** inside **`application.py`**.
 
 ---
 
@@ -185,6 +214,12 @@ Elastic Beanstalk provides built-in observability from the console:
 | **Dependencies missing** | Confirm `requirements.txt` is in the root of your `.zip` |
 | **Health check failing** | Add a `/` route that returns HTTP `200` |
 | **Environment not updating** | Re-upload a new `.zip` via Console > Upload and Deploy |
+
+---
+
+## 📝 License
+
+This project is open source under the [MIT License](LICENSE).
 
 ---
 
